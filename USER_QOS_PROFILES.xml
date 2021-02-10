@@ -139,7 +139,7 @@ XML" chapter in the RTI Connext DDS Core Libraries User's Manual.
             <!-- QoS used to configure the data writer created in the example code -->                
             <datawriter_qos>
                 <publication_name>
-                    <name>cros2_typesDataWriter</name>
+                    <name>cros2_demo_pub</name>
                 </publication_name>
                 <!-- -->
                 <publish_mode>
@@ -160,7 +160,7 @@ XML" chapter in the RTI Connext DDS Core Libraries User's Manual.
             <!-- QoS used to configure the data reader created in the example code -->                
             <datareader_qos>
                 <subscription_name>
-                    <name>cros2_typesDataReader</name>
+                    <name>cros2_demo_sub</name>
                 </subscription_name>
             </datareader_qos>
             <participant_qos>
@@ -170,35 +170,17 @@ XML" chapter in the RTI Connext DDS Core Libraries User's Manual.
                 application from another when you're debugging.
                 -->
                 <participant_name>
-                    <name>cros2_dds</name>
-                    <role_name>cros2_dds_role</role_name>
+                    <name>cros2_demo</name>
+                    <role_name>cros2_demo_role</role_name>
                 </participant_name>
                 
-                <!-- use to identify my return address if multiple candidates -->
-                <property>
-                  <value>
-                    <element>
-                      <name>dds.transport.UDPv4.builtin.parent.allow_interfaces</name>
-                      <value>192.168.1.13</value>
-                    </element>
-                    <element>
-                      <name>dds.transport.UDPv4.builtin.parent.deny_interfaces</name>
-                      <value>192.168.56.1</value> 
-                    </element>
-                  </value>
-                </property>
-                <!-- -->
                 <!-- suppress typeObject compression if interop with earlier DDS -->
                 <discovery_config>
                     <endpoint_type_object_lb_serialization_threshold>
                         -1
                     </endpoint_type_object_lb_serialization_threshold>
                 </discovery_config>
-                <!-- disable type_code and type_object sending on the ROS2(RViz) side -->
-                <resource_limits>
-                  <type_code_max_serialized_length>0</type_code_max_serialized_length>
-                  <type_object_max_serialized_length>0</type_object_max_serialized_length>
-                </resource_limits>
+                
             </participant_qos>
         </qos_profile>
     </qos_library>
