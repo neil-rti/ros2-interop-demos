@@ -45,12 +45,7 @@ void picFrameMotion::FrameProcess(cv::Mat frame)
     // calc the abs diff between this frame's grid intensities, and the rolling average
     for (int i = 0; i < (grids_x * grids_y); i++) {
         new_frame_delta[i] = abs((int)frame_int_average[i] - (int)rolling_int_average[i]);
-        //printf("%2x ", new_frame_delta[i]);
-        if ((i % grids_x) == 0) {
-            //printf("\n");
-        }
     }
-    //printf("-----\n");
 #endif
 
     // sum this frame's intensities into the rolling average
@@ -64,8 +59,8 @@ float picFrameMotion::getPointDepth(int16_t x, int16_t y)
 {
     int fsel = (x / 10) + ((y / 10) * grids_x);
     uint32_t fdelta = new_frame_delta[fsel];
-    //return ((((float)fdelta) / 76.5f) - 5.0f);
-    return ((((float)fdelta) / 36.5f) - 5.0f);
+    float rtnVal = (((float)fdelta) / 36.5f) - 5.0f;
+    return (rtnVal);
 }
 
 

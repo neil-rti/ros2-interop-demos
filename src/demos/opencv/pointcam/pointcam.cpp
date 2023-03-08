@@ -19,6 +19,9 @@ int         pub_rate = 10;                      // publication rate, in samples 
 int         points_total = 0;                   // array size == points_total * 16
 int         sample_size_in_bytes = 15555;        // sample size desired
 int32_t     tests_to_run = -1;                  // max count of tests to run
+int32_t     camera_number = 0;                  // number of video source
+uint32_t    cam_x_res = 640;                    // camera x resolution
+uint32_t    cam_y_res = 480;                    // camera y resolution
 uint32_t    tests_run = 0;                      // count of tests run
 bool        quit_program = false;
 bool        animate_points = false;
@@ -32,23 +35,23 @@ const int   sample_size_min = 74;               // minimum sample size for Point
 void participant_main(void)
 {
     //Open the default video camera
-    VideoCapture cap(0);
+    VideoCapture cap(camera_number);
 
     // if not success, exit program
     if (cap.isOpened() == false)
     {
-        cout << "Cannot open the video camera" << endl;
+        cout << "Cannot open the video camera.  Press ENTER." << endl;
         cin.get(); //wait for any key press
         return;  // FIXME: change to THROW
     }
-  
+
     double dWidth = cap.get(CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
     double dHeight = cap.get(CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
     cout << "Resolution of the video : " << dWidth << " x " << dHeight << endl;
 
     string window_name = "My Camera Feed";
     namedWindow(window_name); //create a window called "My Camera Feed"
-   
+
     // Create a DomainParticipant with default Qos
     dds::domain::DomainParticipant participant(domain_id);
 
@@ -73,7 +76,7 @@ void participant_main(void)
             (( rand() % 255) | 0x25));
     }
 
-    picFrameMotion myFrame(640, 480);
+    picFrameMotion myFrame(cam_x_res, cam_y_res);
 
     uint32_t nsSleep = ((uint32_t)1000000000) / pub_rate;
     tests_run = (uint32_t)tests_to_run;
@@ -86,7 +89,7 @@ void participant_main(void)
     for (uint32_t wcount = 0; !quit_program; wcount++) {
 
         Mat frame;
-        bool bSuccess = cap.read(frame); // read a new frame from video 
+        bool bSuccess = cap.read(frame); // read a new frame from video
 
         //Breaking the while loop if the frames cannot be captured
         if (bSuccess == false)
@@ -98,6 +101,7 @@ void participant_main(void)
 
         myFrame.FrameProcess(frame);
 
+        // debug
         // collect pseudorandom pixels from the image, convert to PointCloud2
         ptcData = myLidarPub.get_send_data_buffer();
         for (int i = 0; i < (points_total * 4); i += 4)
@@ -118,6 +122,7 @@ void participant_main(void)
             // for the ptc_y axis: maintain an average intensity map: whatever CHANGES gets moved forward
             // NOTE also: this averaging approach can help to guide where to take random samples (more samples in moving areas)
             *(ptcData + i + 1) = myFrame.getPointDepth(pix_x, pix_y);       // Y axis
+            //*(ptcData + i + 1) = 1.0;       // Y axis
 #else
             // pix intensity (max: 255*3=765) to set ptc_y; use delta between colors to set Y
             uint32_t pix_intensity = abs(frame.at<Vec3b>(pix_y, pix_x)[0] - frame.at<Vec3b>(pix_y, pix_x)[1])
@@ -132,22 +137,20 @@ void participant_main(void)
             * (ptcData + i + 3) = *reinterpret_cast<float*>(&pcColor);
         }
 
-        //wait for for 10 ms until any key is pressed.  
+        //wait for for 10 ms until any key is pressed.
         //If the 'Esc' key is pressed, break the while loop.
-        //If the any other key is pressed, continue the loop 
-        //If any key is not pressed withing 10 ms, continue the loop 
+        //If the any other key is pressed, continue the loop
+        //If any key is not pressed withing 10 ms, continue the loop
         if (waitKey(10) == 27)
         {
             cout << "Esc key is pressed by user. Stopping the video" << endl;
             break;
         }
 
-        //printf("Sending: %u\n", testIdx);
         myLidarPub.publish();
 
         //show the frame in the created window
         imshow(window_name, frame);
-
     }
 }
 
@@ -163,6 +166,9 @@ void errPrintUsage(char *progname)
     fprintf(stdout, "-d <0-240>       DDS Domain Number (%d)\n", domain_id);
     fprintf(stdout, "-s <0-...>       Size (approx) of sample, in bytes(%d)\n", sample_size_in_bytes);
     fprintf(stdout, "-t <1-...>       Total number of tests to run (%d)\n", tests_to_run);
+    fprintf(stdout, "-v <0..>         Camera source number (%d)\n", camera_number);
+    fprintf(stdout, "-x <xres>        Camera X (horizontal) resolution (%d)\n", cam_x_res);
+    fprintf(stdout, "-y <yres>        Camera Y (vertical) resolution (%d)\n", cam_y_res);
     fprintf(stdout, "-a               Animate the data points\n");
     fprintf(stdout, "-h               Print this message and exit\n\n");
     return;
@@ -179,6 +185,9 @@ int main(int argc, char *argv[])
     int sampleSizeIsArg = 0;
     int topicNameIsArg = 0;
     int testIterationsIsArg = 0;
+    int cameraNumberIsArg = 0;
+    int cameraXResIsArg = 0;
+    int cameraYResIsArg = 0;
     int pubRateIsArg = 0;
 
     int i = -1;
@@ -219,6 +228,18 @@ int main(int argc, char *argv[])
                     testIterationsIsArg = iarg + 1;
                     break;
 
+                case 'v':       // video source enum
+                    cameraNumberIsArg = iarg + 1;
+                    break;
+
+                case 'x':       // video source x resolution
+                    cameraXResIsArg = iarg + 1;
+                    break;
+
+                case 'y':       // video source y resolution
+                    cameraYResIsArg = iarg + 1;
+                    break;
+
                 default:
                     fprintf(stderr, "Invalid option: \"%c\" - Ignored\n", argv[iarg][2]);
                     break;
@@ -242,6 +263,15 @@ int main(int argc, char *argv[])
             }
             else if (testIterationsIsArg == iarg) {
                 tests_to_run = atoi(argv[iarg]);
+            }
+            else if (cameraNumberIsArg == iarg) {
+                camera_number = atoi(argv[iarg]);
+            }
+            else if (cameraXResIsArg == iarg) {
+                cam_x_res = atoi(argv[iarg]);
+            }
+            else if (cameraYResIsArg == iarg) {
+                cam_y_res = atoi(argv[iarg]);
             }
             iarg++;
         }
