@@ -7,108 +7,57 @@ else()
   message(FATAL_ERROR "NDDSHOME (env var) is not set")
 endif()
 
-if(DEFINED ENV{ROS_DATA_TYPES_DIR})
-  set(ROS_DATA_TYPES_DIR $ENV{ROS_DATA_TYPES_DIR})
-else()
-  message(FATAL_ERROR "ROS_DATA_TYPES_DIR (env var) is not set")
-endif()
-
-set(CMAKE_MODULE_PATH ${NDDSHOME}/resource/cmake)
-
-find_package(RTIConnextDDS EXACT "6.0.1" REQUIRED)
-
-# for the OpenCV demo
-#find_package( OpenCV REQUIRED )
-#include_directories( ${OpenCV_INCLUDE_DIRS} )
-
-find_library(ROS_IDL_LIBRARY NAMES RosDataTypes HINTS "${ROS_DATA_TYPES_DIR}/build")
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake)
+find_package(RTIConnextDDS REQUIRED)
 
 # - Point to the source dirs and files ----------
 include_directories(
-    "src/cros2" 
-    ${ROS_DATA_TYPES_DIR}/build 
+    "src/generated"
     ${CONNEXTDDS_INCLUDE_DIRS}
 )
 
+# Set paths
+set(PATH_CODEGEN ${CMAKE_CURRENT_SOURCE_DIR}/src/generated)
+# Set files generated from code gen
+set(FILES_CODEGEN
+  ${PATH_CODEGEN}/turtle_shape_types.cxx
+  ${PATH_CODEGEN}/turtle_shape_typesPlugin.cxx
+  ${PATH_CODEGEN}/rviz_demo_types.cxx
+  ${PATH_CODEGEN}/rviz_demo_typesPlugin.cxx
+  )
+# Run Codegen to generate the source code files for the types
+include(ConnextDdsCodegen)
+connextdds_rtiddsgen_run(
+  IDL_FILE ${PATH_CODEGEN}/turtle_shape_types.idl 
+  OUTPUT_DIRECTORY ${PATH_CODEGEN}
+  LANG C++11
+  UNBOUNDED
+)
+connextdds_rtiddsgen_run(
+  IDL_FILE ${PATH_CODEGEN}/rviz_demo_types.idl
+  OUTPUT_DIRECTORY ${PATH_CODEGEN}
+  LANG C++11
+  UNBOUNDED
+)
+  
+add_custom_target(codegen_sources
+  DEPENDS ${FILES_CODEGEN})
+
 # - Executables to build -----------------------------------------------------
-add_executable(rviz_all 
-    src/demos/rviz_all/rviz_all_demo.cxx 
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_occupancygrid_support.cxx
-	src/cros2/cros2_image_support.cxx
-	src/cros2/cros2_posestamped_support.cxx
-	src/cros2/cros2_posearray_support.cxx
-	src/cros2/cros2_marker_support.cxx
-	src/cros2/cros2_markerarray_support.cxx
-	src/cros2/cros2_odometry_support.cxx
-	src/cros2/cros2_path_support.cxx
-	src/cros2/cros2_gridcells_support.cxx
-	src/cros2/cros2_fluidpressure_support.cxx
-	src/cros2/cros2_illuminance_support.cxx
-	src/cros2/cros2_temperature_support.cxx
-	src/cros2/cros2_relativehumidity_support.cxx
-	src/cros2/cros2_polygonstamped_support.cxx
-	src/cros2/cros2_common.cxx
-)
-target_link_libraries(rviz_all PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
-add_executable(bmp_view 
-  	src/demos/bmp_view/bmp_view_demo.cxx 
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_occupancygrid_support.cxx
-	src/cros2/cros2_image_support.cxx
-	src/cros2/cros2_common.cxx
-)
-target_link_libraries(bmp_view PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
+# turtle_shapes: use Shapes Demo to drive ROS2 TurtleSim demo.
 add_executable(turtle_shapes 
-  	src/demos/turtleshapes/turtle_shapes.cxx 
-	src/cros2/cros2_turtlesim_support.cxx 
-	src/shapes/shapesdemo_support.cxx
-  	src/typesupport/ShapeType.cxx 
-  	src/typesupport/ShapeTypePlugin.cxx 
-	src/cros2/cros2_common.cxx
+  src/turtle_shapes_app/turtle_shapes.cxx 
+  src/turtle_shapes_app/cros2_turtlesim_support.cxx 
+  src/turtle_shapes_app/shapesdemo_support.cxx
+  src/generated/turtle_shape_types.cxx
+  src/generated/turtle_shape_typesPlugin.cxx
 )
-target_include_directories(turtle_shapes PUBLIC src/shapes src/typesupport)
-target_link_libraries(turtle_shapes PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
+target_link_libraries(turtle_shapes PUBLIC RTIConnextDDS::cpp2_api)
 
-# wrap_bench is a latency testing app for wrap_app or ROS2 equivalent
-add_executable(wrap_bench
-  	src/demos/bench/tester/wrap_bench_main.cxx
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_common.cxx
+# rviz_demo: produces data for most of the visualizers in ROS2 RViz
+add_executable(rviz_demo 
+  src/rviz_demo/rviz_demo.cxx 
+  src/generated/rviz_demo_types.cxx
+  src/generated/rviz_demo_typesPlugin.cxx
 )
-target_link_libraries(wrap_bench PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
-# wrap_app is a native DDS replacement for an equivalent ROS2 app
-add_executable(wrap_app
-  	src/demos/bench/app/wrap_app_main.cxx
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_common.cxx
-)
-target_link_libraries(wrap_app PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
-# blast_pub is a variable-rate publisher of ROS2 topics
-add_executable(blast_pub
-  	src/demos/bench/tester/blast_pub_main.cxx
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_common.cxx
-)
-target_link_libraries(blast_pub PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
-# blast_sub is a subscriber/counter of ROS2 topics
-add_executable(blast_sub
-  	src/demos/bench/tester/blast_sub_main.cxx
-	src/cros2/cros2_pointcloud_support.cxx 
-	src/cros2/cros2_common.cxx
-)
-target_link_libraries(blast_sub PUBLIC RTIConnextDDS::cpp2_api ${ROS_IDL_LIBRARY})
-
-# pointcam converts camera video into PointCloud2 data type
-#add_executable( pointcam 
-#  src/demos/opencv/pointcam/pointcam.cpp
-#  src/demos/opencv/pointcam/pic_frame_motion_depth.cxx
-#  src/cros2/cros2_pointcloud_support.cxx 
-#	src/cros2/cros2_common.cxx
-#)
-#target_link_libraries(pointcam PUBLIC RTIConnextDDS::cpp2_api ${OpenCV_LIBS} ${ROS_IDL_LIBRARY})
+target_link_libraries(rviz_demo PUBLIC RTIConnextDDS::cpp2_api)

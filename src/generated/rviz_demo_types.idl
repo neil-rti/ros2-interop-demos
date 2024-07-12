@@ -1,0 +1,420 @@
+module builtin_interfaces {
+  module msg {
+    module dds_ {
+      struct Time_ {
+        int32 sec;
+        uint32 nanosec;
+      };
+    };
+  };
+};
+module std_msgs {
+  module msg {
+    module dds_ {
+      struct Header_ {
+        builtin_interfaces::msg::dds_::Time_ stamp;
+        string frame_id;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct RelativeHumidity_ {
+        std_msgs::msg::dds_::Header_ header;
+        double relative_humidity;
+        double variance;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      module PointField_Constants {
+        const uint8 INT8_=1;
+        const uint8 UINT8_=2;
+        const uint8 INT16_=3;
+        const uint8 UINT16_=4;
+        const uint8 INT32_=5;
+        const uint8 UINT32_=6;
+        const uint8 FLOAT32_=7;
+        const uint8 FLOAT64_=8;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct PointField_ {
+        string name;
+        uint32 offset;
+        uint8 datatype;
+        uint32 count;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct PointCloud2_ {
+        std_msgs::msg::dds_::Header_ header;
+        uint32 height;
+        uint32 width;
+        sequence<sensor_msgs::msg::dds_::PointField_> fields;
+        boolean is_bigendian;
+        uint32 point_step;
+        uint32 row_step;
+        sequence<uint8> data;
+        boolean is_dense;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct FluidPressure_ {
+        std_msgs::msg::dds_::Header_ header;
+        double fluid_pressure;
+        double variance;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct Image_ {
+        std_msgs::msg::dds_::Header_ header;
+        uint32 height;
+        uint32 width;
+        string encoding;
+        uint8 is_bigendian;
+        uint32 step;
+        sequence<uint8> data;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct Temperature_ {
+        std_msgs::msg::dds_::Header_ header;
+        double temperature;
+        double variance;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct Illuminance_ {
+        std_msgs::msg::dds_::Header_ header;
+        double illuminance;
+        double variance;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Point32_ {
+        float x;
+        float y;
+        float z;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Polygon_ {
+        sequence<geometry_msgs::msg::dds_::Point32_> points;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct PolygonStamped_ {
+        std_msgs::msg::dds_::Header_ header;
+        geometry_msgs::msg::dds_::Polygon_ polygon;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Quaternion_ {
+        double x;
+        double y;
+        double z;
+        double w;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Point_ {
+        double x;
+        double y;
+        double z;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Pose_ {
+        geometry_msgs::msg::dds_::Point_ position;
+        geometry_msgs::msg::dds_::Quaternion_ orientation;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct PoseStamped_ {
+        std_msgs::msg::dds_::Header_ header;
+        geometry_msgs::msg::dds_::Pose_ pose;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct PoseArray_ {
+        std_msgs::msg::dds_::Header_ header;
+        sequence<geometry_msgs::msg::dds_::Pose_> poses;
+      };
+    };
+  };
+};
+module visualization_msgs {
+  module msg {
+    module dds_ {
+      struct MeshFile_ {
+        string filename;
+        sequence<uint8> data;
+      };
+    };
+  };
+};
+module visualization_msgs {
+  module msg {
+    module dds_ {
+      struct UVCoordinate_ {
+        float u;
+        float v;
+      };
+    };
+  };
+};
+module sensor_msgs {
+  module msg {
+    module dds_ {
+      struct CompressedImage_ {
+        std_msgs::msg::dds_::Header_ header;
+        string format;
+        sequence<uint8> data;
+      };
+    };
+  };
+};
+module builtin_interfaces {
+  module msg {
+    module dds_ {
+      struct Duration_ {
+        int32 sec;
+        uint32 nanosec;
+      };
+    };
+  };
+};
+module std_msgs {
+  module msg {
+    module dds_ {
+      struct ColorRGBA_ {
+        float r;
+        float g;
+        float b;
+        float a;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Vector3_ {
+        double x;
+        double y;
+        double z;
+      };
+    };
+  };
+};
+module visualization_msgs {
+  module msg {
+    module dds_ {
+      module Marker_Constants {
+        const int32 ARROW_=0;
+        const int32 CUBE_=1;
+        const int32 SPHERE_=2;
+        const int32 CYLINDER_=3;
+        const int32 LINE_STRIP_=4;
+        const int32 LINE_LIST_=5;
+        const int32 CUBE_LIST_=6;
+        const int32 SPHERE_LIST_=7;
+        const int32 POINTS_=8;
+        const int32 TEXT_VIEW_FACING_=9;
+        const int32 MESH_RESOURCE_=10;
+        const int32 TRIANGLE_LIST_=11;
+        const int32 ARROW_STRIP_=12;
+        const int32 ADD_=0;
+        const int32 MODIFY_=0;
+        const int32 DELETE_=2;
+        const int32 DELETEALL_=3;
+      };
+    };
+  };
+};
+module visualization_msgs {
+  module msg {
+    module dds_ {
+      struct Marker_ {
+        std_msgs::msg::dds_::Header_ header;
+        string ns;
+        int32 id;
+        int32 type;
+        int32 action;
+        geometry_msgs::msg::dds_::Pose_ pose;
+        geometry_msgs::msg::dds_::Vector3_ scale;
+        std_msgs::msg::dds_::ColorRGBA_ color;
+        builtin_interfaces::msg::dds_::Duration_ lifetime;
+        boolean frame_locked;
+        sequence<geometry_msgs::msg::dds_::Point_> points;
+        sequence<std_msgs::msg::dds_::ColorRGBA_> colors;
+        string texture_resource;
+        sensor_msgs::msg::dds_::CompressedImage_ texture;
+        sequence<visualization_msgs::msg::dds_::UVCoordinate_> uv_coordinates;
+        string text;
+        string mesh_resource;
+        visualization_msgs::msg::dds_::MeshFile_ mesh_file;
+        boolean mesh_use_embedded_materials;
+      };
+    };
+  };
+};
+module visualization_msgs {
+  module msg {
+    module dds_ {
+      struct MarkerArray_ {
+        sequence<visualization_msgs::msg::dds_::Marker_> markers;
+      };
+    };
+  };
+};
+module nav_msgs {
+  module msg {
+    module dds_ {
+      struct MapMetaData_ {
+        builtin_interfaces::msg::dds_::Time_ map_load_time;
+        float resolution;
+        uint32 width;
+        uint32 height;
+        geometry_msgs::msg::dds_::Pose_ origin;
+      };
+    };
+  };
+};
+module nav_msgs {
+  module msg {
+    module dds_ {
+      struct OccupancyGrid_ {
+        std_msgs::msg::dds_::Header_ header;
+        nav_msgs::msg::dds_::MapMetaData_ info;
+        sequence<int8> data;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Twist_ {
+        geometry_msgs::msg::dds_::Vector3_ linear;
+        geometry_msgs::msg::dds_::Vector3_ angular;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct TwistWithCovariance_ {
+        geometry_msgs::msg::dds_::Twist_ twist;
+        double covariance[36];
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct PoseWithCovariance_ {
+        geometry_msgs::msg::dds_::Pose_ pose;
+        double covariance[36];
+      };
+    };
+  };
+};
+module nav_msgs {
+  module msg {
+    module dds_ {
+      struct Odometry_ {
+        std_msgs::msg::dds_::Header_ header;
+        string child_frame_id;
+        geometry_msgs::msg::dds_::PoseWithCovariance_ pose;
+        geometry_msgs::msg::dds_::TwistWithCovariance_ twist;
+      };
+    };
+  };
+};
+module nav_msgs {
+  module msg {
+    module dds_ {
+      struct GridCells_ {
+        std_msgs::msg::dds_::Header_ header;
+        float cell_width;
+        float cell_height;
+        sequence<geometry_msgs::msg::dds_::Point_> cells;
+      };
+    };
+  };
+};
+module nav_msgs {
+  module msg {
+    module dds_ {
+      struct Path_ {
+        std_msgs::msg::dds_::Header_ header;
+        sequence<geometry_msgs::msg::dds_::PoseStamped_> poses;
+      };
+    };
+  };
+};

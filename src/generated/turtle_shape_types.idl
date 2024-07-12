@@ -1,0 +1,302 @@
+/* type support for ShapesDemo */
+enum ShapeFillKind {
+    SOLID_FILL,
+    TRANSPARENT_FILL,
+    HORIZONTAL_HATCH_FILL,
+    VERTICAL_HATCH_FILL
+};
+
+struct ShapeType
+{
+    string<128> color; //@key
+    long x;
+    long y;
+    long shapesize;
+};//@Extensibility EXTENSIBLE_EXTENSIBILITY 
+
+struct ShapeTypeExtended : ShapeType {
+    ShapeFillKind fillKind;
+    float angle;
+};//@Extensibility EXTENSIBLE_EXTENSIBILITY 
+
+/* typesupport for TurtleSim */
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Vector3_ {
+        double x;
+        double y;
+        double z;
+      };
+    };
+  };
+};
+module geometry_msgs {
+  module msg {
+    module dds_ {
+      struct Twist_ {
+        geometry_msgs::msg::dds_::Vector3_ linear;
+        geometry_msgs::msg::dds_::Vector3_ angular;
+      };
+    };
+  };
+};
+module turtlesim {
+  module msg {
+    module dds_ {
+      struct Color_ {
+        uint8 r;
+        uint8 g;
+        uint8 b;
+      };
+    };
+  };
+};
+module turtlesim {
+  module msg {
+    module dds_ {
+      struct Pose_ {
+        float x;
+        float y;
+        float theta;
+        float linear_velocity;
+        float angular_velocity;
+      };
+    };
+  };
+};
+module builtin_interfaces {
+  module msg {
+    module dds_ {
+      struct Time_ {
+        long sec;
+        unsigned long nanosec;
+      };
+    };
+  };
+};
+module unique_identifier_msgs {
+  module msg {
+    module dds_ {
+      struct UUID_ {
+        octet uuid[16];
+      };
+    };
+  };
+};
+module turtlesim {
+  module action {
+    module dds_ {
+      struct RotateAbsolute_Goal_ {
+        float theta;
+      };
+      struct RotateAbsolute_SendGoal_Request_ {
+        unique_identifier_msgs::msg::dds_::UUID_ goal_id;
+        RotateAbsolute_Goal_ goal;
+      };
+    };
+  };
+};
+module turtlesim {
+  module action {
+    module dds_ {
+      struct RotateAbsolute_GetResult_Request_ {
+        unique_identifier_msgs::msg::dds_::UUID_ goal_id;
+      };
+    };
+  };
+};
+module action_msgs {
+  module msg {
+    module dds_ {
+      struct GoalInfo_ {
+        unique_identifier_msgs::msg::dds_::UUID_ goal_id;
+        builtin_interfaces::msg::dds_::Time_ stamp;
+      };
+    };
+  };
+  module srv {
+    module dds_ {
+      struct CancelGoal_Request_ {
+        action_msgs::msg::dds_::GoalInfo_ goal_info;
+      };
+    };
+  };
+};
+module action_msgs {
+  module srv {
+    module dds_ {
+      struct CancelGoal_Response_ {
+        octet return_code;
+        sequence<action_msgs::msg::dds_::GoalInfo_> goals_canceling;
+      };
+    };
+  };
+};
+module turtlesim {
+  module action {
+    module dds_ {
+      struct RotateAbsolute_Result_ {
+        float delta;
+      };
+      struct RotateAbsolute_GetResult_Response_ {
+        octet status;
+        RotateAbsolute_Result_ result;
+      };
+    };
+  };
+};
+module turtlesim {
+  module action {
+    module dds_ {
+      struct RotateAbsolute_SendGoal_Response_ {
+        boolean accepted;
+        builtin_interfaces::msg::dds_::Time_ stamp;
+      };
+    };
+  };
+};
+module turtlesim {
+  module action {
+    module dds_ {
+      struct RotateAbsolute_Feedback_ {
+        float remaining;
+      };
+      struct RotateAbsolute_FeedbackMessage_ {
+        unique_identifier_msgs::msg::dds_::UUID_ goal_id;
+        RotateAbsolute_Feedback_ feedback;
+      };
+    };
+  };
+};
+module action_msgs {
+  module msg {
+    module dds_ {
+      struct GoalStatus_ {
+        GoalInfo_ goal_info;
+        octet status;
+      };
+      struct GoalStatusArray_ {
+        sequence<action_msgs::msg::dds_::GoalStatus_> status_list;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct SetPen_Request_ {
+        uint8 r;
+        uint8 g;
+        uint8 b;
+        uint8 width;
+        uint8 off;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct SetPen_Response_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct Spawn_Request_ {
+        float x;
+        float y;
+        float theta;
+        string name;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct Spawn_Response_ {
+        string name;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct TeleportAbsolute_Request_ {
+        float x;
+        float y;
+        float theta;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct TeleportAbsolute_Response_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct Kill_Request_ {
+        string name;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct Kill_Response_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct TeleportRelative_Request_ {
+        float linear;
+        float angular;
+      };
+    };
+  };
+};
+module turtlesim {
+  module srv {
+    module dds_ {
+      struct TeleportRelative_Response_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
+module std_srvs {
+  module srv {
+    module dds_ {
+      struct Empty_Request_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
+module std_srvs {
+  module srv {
+    module dds_ {
+      struct Empty_Response_ {
+        uint8 structure_needs_at_least_one_member;
+      };
+    };
+  };
+};
