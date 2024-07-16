@@ -1,7 +1,15 @@
 # ros2-interop-demos
 Demonstration DDS apps that interoperate with ROS 2.  
 ROS 2 runs primarily on DDS, which means that all ROS 2 applications are DDS applications; 
-DDS and ROS 2 applications can be freely intermixed.
+DDS and ROS 2 applications can be freely intermixed.  
+These examples show how a native/non-ROS2 DDS application can interoperate with ROS2-on-DDS through 3 of
+its 4 primary patterns:  
+ * Messages (*.msg files), a one-way pub-->sub sending of a data topic.
+ * Services (*.srv files), a request/reply pattern that sends a topic and expects a response on a paired topic.
+ * Actions (*.action files), a request/reply pattern that also provides a 'feedback' topic to monitor progress.
+
+Note that 'parameter' topics are not yet covered in these examples.  
+These examples interoperate with two of the most popular ROS2 applications: RViz, and TurtleSim.
 
 
 ## Building the examples: 
@@ -10,9 +18,11 @@ To build, do the following:
 
  1. Clone this repository to a local directory on a build host for RTI Connext (Linux, Windows, MacOS).
 
- 2. From this directory, create and cd to a build directory 
-    `mkdir build`  
-    `cd build`
+ 2. From this directory, create and cd to a build directory  
+    ```
+      mkdir build  
+      cd build
+    ```
   
  3. Ensure that the environment variable NDDSHOME is set to your Connext installation location. 
     This can be done easily by running the `"rti_setenv_*"` script or batch file, 
