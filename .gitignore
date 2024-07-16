@@ -1,0 +1,4 @@
+build/
+src/generated/*.cxx
+src/generated/*.hpp
+src/generated/*.cmake

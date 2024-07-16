@@ -60,6 +60,9 @@ public:
         pub_sample.y(y);
         pub_sample.shapesize(sz);
     }
+    void pub_sample_color_set(std::string color) {
+        pub_sample.color(color);
+    }
 
 
 private:

@@ -163,6 +163,7 @@ void participant_main(int domain_id, int sample_count)
                     // publish the position as a Triangle 
                     int32_t tri_x = static_cast<int32_t>(circleTurtles[i]->myPose.x * STperX);
                     int32_t tri_y = static_cast<int32_t>(270 - (circleTurtles[i]->myPose.y * STperY));
+                    myTriangle.pub_sample_color_set(circles[i].color);
                     myTriangle.pub_sample_xysize_set(tri_x, tri_y, 8);
                     myTriangle.publish();
 
