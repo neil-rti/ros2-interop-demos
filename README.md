@@ -102,7 +102,7 @@ The data types are as follows:
  random movement as well.  Topic name is `rt/test_poly`.  
 
 Rendering in RViz2 will produce:
-![RViz render](bmp_view_rviz.jpg)
+![RViz render](rviz_demo.jpg)
 
 
 
