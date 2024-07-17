@@ -174,13 +174,13 @@ XML" chapter in the RTI Connext DDS Core Libraries User's Manual.
                     <role_name>cros2_demo_role</role_name>
                 </participant_name>
                 
-                <!-- suppress typeObject compression if interop with earlier DDS -->
+                <!-- suppress typeObject compression if interop with earlier DDS 
                 <discovery_config>
                     <endpoint_type_object_lb_serialization_threshold>
                         -1
                     </endpoint_type_object_lb_serialization_threshold>
                 </discovery_config>
-                
+                -->
             </participant_qos>
         </qos_profile>
     </qos_library>

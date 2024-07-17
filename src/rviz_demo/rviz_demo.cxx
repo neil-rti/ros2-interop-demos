@@ -467,7 +467,7 @@ void participant_main(int domain_id)
     marker_sample.color().g(1.0);
     marker_sample.color().b(0.0);
     marker_sample.color().a(1.0);
-    marker_sample.lifetime().sec(10);
+    marker_sample.lifetime().sec(3);
     marker_sample.lifetime().nanosec(0);
     marker_sample.pose().position().x(0.0f);
     marker_sample.pose().position().y(0.0f);
