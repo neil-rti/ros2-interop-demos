@@ -26,6 +26,7 @@
 #include <dds/sub/ddssub.hpp>
 #include <dds/core/ddscore.hpp>
 #include <rti/util/util.hpp>                // for sleep()
+#include <rti/config/Logger.hpp>            // for logging
 #include "rviz_demo_typesPlugin.hpp"
 
 #define PI_F                    ((float)3.14159265359)
@@ -64,21 +65,39 @@ void tstamp_get(timespec *tStamp)
     return;
 }
 
-// returns random float values within a specified range
+uint64_t tstamp64_get(void)
+{
+    timespec tStamp;
+#ifdef WIN32
+    timespec_get(&tStamp, TIME_UTC);
+#else
+    clock_gettime(CLOCK_REALTIME, &tStamp);
+#endif
+    return ((static_cast<uint64_t>(tStamp.tv_sec) * 1000000000) + static_cast<uint64_t>(tStamp.tv_nsec));
+}
+
+// some pseudorandom numbers are needed, so here is a portable gen that works consistently across platformas
+uint64_t randVal_g = tstamp64_get();
+uint64_t randNext()
+{
+    uint64_t z = (randVal_g += UINT64_C(0x9E3779B97F4A7C15));
+    z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
+    z = (z ^ (z >> 27)) * UINT64_C(0x94D049BB133111EB);
+    return z ^ (z >> 31);
+}
 float randFloatInRange(float low, float high)
 {
-    float rval = ((float) rand() / (float)RAND_MAX);
+    float rval = ((float) randNext() / (float)(0xffffffffffffffff));
     float rspan = high-low;
     return low + (rval * rspan);
 }
 // returns random double values within a specified range
 double randDoubleInRange(double low, double high)
 {
-    double rval = ((double) rand() / (double)RAND_MAX);
+    double rval = ((double) randNext() / (double)0xffffffffffffffff);
     double rspan = high-low;
     return low + (rval * rspan);
 }
-
 
 /** -----------------------------------------------------------------
  * image_scale_image
@@ -215,15 +234,13 @@ int read_ptcloud_bitmap(uint8_t **imgData, uint32_t *imgRows, uint32_t *imgCols,
  **/
 void ptcloud_build_img_export(uint8_t *imgData, int imgRows, int imgCols, uint32_t pointsTotal, float *ptcData)
 {
-    static uint32_t lfsr = (uint32_t)rand();
     uint32_t pcIdx = 0;
     uint32_t addPad = ((imgCols * 3) % 4);
     if (addPad) addPad = 4 - addPad;
     while (pcIdx < pointsTotal) {
-        uint32_t tmpX = lfsr % imgCols;
-        lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xD0000001u);
-        uint32_t tmpY = lfsr % (imgRows - 2);
-        lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xD0000001u);
+        uint64_t rndVal = randNext();
+        uint32_t tmpX = static_cast<uint32_t>(rndVal & 0xffffffff) % imgCols;
+        uint32_t tmpY = static_cast<uint32_t>(rndVal >> 32) % (imgRows - 2);
         uint32_t randPixBase = (tmpY * imgCols * 3) + (tmpX * 3);
         randPixBase += (tmpY * addPad);
         uint8_t pixRed = imgData[randPixBase];
@@ -232,7 +249,7 @@ void ptcloud_build_img_export(uint8_t *imgData, int imgRows, int imgCols, uint32
         uint32_t pcColor = ((((uint32_t)pixBlu) << 16) | (((uint32_t)pixGrn) << 8) | ((uint32_t)pixRed));
 
         // Use pixel intensity for the Y axis position 
-        float pcYval = -((std::abs(((float)(pixRed + pixGrn + pixBlu)))) / 256.0F) + 5.0f;
+        float pcYval = -((std::abs((float)(pixRed + pixGrn + pixBlu))) / 256.0F) + 5.0f;
         ptcData[(pcIdx * 4) + 0] = (((float)tmpX * 10.0F) / imgCols) - 5.0F;    // X
         ptcData[(pcIdx * 4) + 1] = pcYval;                                      // Y
         ptcData[(pcIdx * 4) + 2] = (((float)tmpY * 10.0F) / imgRows);           // Z
@@ -248,9 +265,9 @@ void ptcloud_build_img_export(uint8_t *imgData, int imgRows, int imgCols, uint32
  */
 void cart_to_sphere(Vec3d_t &cart, Vec3d_t &sphere_rpa)
 {
-    sphere_rpa.x = sqrt(pow(cart.x, 2.0) + pow(cart.y, 2.0) +pow(cart.z, 2.0));
-    sphere_rpa.y = acos(cart.z / sphere_rpa.x);
-    sphere_rpa.z = atan2(cart.y, cart.x);
+    sphere_rpa.x = sqrtf(powf(cart.x, 2.0) + powf(cart.y, 2.0) + powf(cart.z, 2.0));
+    sphere_rpa.y = acosf(cart.z / sphere_rpa.x);
+    sphere_rpa.z = atan2f(cart.y, cart.x);
 }
 
 /**
@@ -259,9 +276,9 @@ void cart_to_sphere(Vec3d_t &cart, Vec3d_t &sphere_rpa)
  */
 void sphere_to_cart(Vec3d_t &sphere_rpa, Vec3d_t &cart)
 {
-    cart.x = sphere_rpa.x * sin(sphere_rpa.y) * cos(sphere_rpa.z);
-    cart.y = sphere_rpa.x * sin(sphere_rpa.y) * sin(sphere_rpa.z);
-    cart.z = sphere_rpa.x * cos(sphere_rpa.y);
+    cart.x = sphere_rpa.x * sinf(sphere_rpa.y) * cosf(sphere_rpa.z);
+    cart.y = sphere_rpa.x * sinf(sphere_rpa.y) * sinf(sphere_rpa.z);
+    cart.z = sphere_rpa.x * cosf(sphere_rpa.y);
 }
 
 /***
@@ -275,7 +292,7 @@ void pose_marker_update(std::vector<PoseMarkerInfo> &poseMarks)
         cart_to_sphere(poseMarks.at(i).position, rpaPos);
 
         // rotate around Z by changing azimuth
-        rpaPos.z += (0.15 * (1.0 - (rpaPos.x/10.0)));
+        rpaPos.z += (0.15f * (1.0f - (rpaPos.x/10.0f)));
 
         // get the marker to point to its motion
         double yaw = rpaPos.z + (3.141592653 / 2);
@@ -288,10 +305,10 @@ void pose_marker_update(std::vector<PoseMarkerInfo> &poseMarks)
         double cy = cos(yaw * 0.5);
         double sy = sin(yaw * 0.5);
 
-        poseMarks.at(i).orientation.w = cr * cp * cy + sr * sp * sy;
-        poseMarks.at(i).orientation.x = sr * cp * cy - cr * sp * sy;
-        poseMarks.at(i).orientation.y = cr * sp * cy + sr * cp * sy;
-        poseMarks.at(i).orientation.z = cr * cp * sy - sr * sp * cy;        
+        poseMarks.at(i).orientation.w = static_cast<float>(cr * cp * cy + sr * sp * sy);
+        poseMarks.at(i).orientation.x = static_cast<float>(sr * cp * cy - cr * sp * sy);
+        poseMarks.at(i).orientation.y = static_cast<float>(cr * sp * cy + sr * cp * sy);
+        poseMarks.at(i).orientation.z = static_cast<float>(cr * cp * sy - sr * sp * cy);        
 
         // back to cartesian
         sphere_to_cart(rpaPos, poseMarks.at(i).position);
@@ -430,9 +447,9 @@ void participant_main(int domain_id)
     std::vector<PoseMarkerInfo> poseMarks;
     poseMarks.resize(poses_max);
     for(int n=0 ; n<poses_max ; n++) {
-        poseMarks.at(n).position.x = randDoubleInRange(-4.3, 4.3);
-        poseMarks.at(n).position.y = randDoubleInRange(-4.3, 4.3);
-        poseMarks.at(n).position.z = randDoubleInRange( 0.0, 9.0);
+        poseMarks.at(n).position.x = randFloatInRange(-4.3f, 4.3f);
+        poseMarks.at(n).position.y = randFloatInRange(-4.3f, 4.3f);
+        poseMarks.at(n).position.z = randFloatInRange( 0.0f, 9.0f);
         poseMarks.at(n).orientation.x = 0.0f;
         poseMarks.at(n).orientation.y = 0.0f;
         poseMarks.at(n).orientation.z = 0.0f;
@@ -458,7 +475,7 @@ void participant_main(int domain_id)
     marker_sample.header().frame_id("map");
     marker_sample.ns("rti");
     marker_sample.id(0);
-    marker_sample.type(0);
+    marker_sample.type(9);      // 0=arrow, 9=text-facing
     marker_sample.action(0);
     marker_sample.scale().x(0.2);
     marker_sample.scale().y(0.2);
@@ -633,15 +650,14 @@ void participant_main(int domain_id)
 
         if (!(wcount % 2)) {
             // send the marker
-            float tmpRndX = (((float)(rand() % 1000)) / 100) - 5.0F;
-            float tmpRndY = (((float)(rand() % 1000)) / 100) - 5.0F;
-            float tmpRndZ = (((float)(rand() % 1000)) / 100);
-            uint32_t tmpRndV = rand() % 1000;
+            float tmpRndX = (((float)(randNext() % 1000)) / 100) - 5.0F;
+            float tmpRndY = (((float)(randNext() % 1000)) / 100) - 5.0F;
+            float tmpRndZ = (((float)(randNext() % 1000)) / 100);
             marker_sample.pose().position().x(tmpRndX);
             marker_sample.pose().position().y(tmpRndY);
             marker_sample.pose().position().z(tmpRndZ);
-            char tmpStr[9];
-            sprintf(tmpStr, "MK%04u", tmpRndV);
+            char tmpStr[15];
+            sprintf(tmpStr, "%3.1f,%3.1f,%3.1f", tmpRndX, tmpRndY, tmpRndZ);
             marker_sample.text(tmpStr);
             marker_sample.id(wcount);
             tstamp_get(&ts);
@@ -696,9 +712,6 @@ void participant_main(int domain_id)
             pose_marker_update(poseMarks);
             tstamp_get(&ts);
             for (int k = 0; k < poses_max; k++) {
-                //tmpRndX = (((float)(rand() % 1000)) / 100) - 5.0F;
-                //tmpRndY = (((float)(rand() % 1000)) / 100) - 5.0F;
-                //tmpRndZ = (((float)(rand() % 1000)) / 100);
                 tmpRndX = poseMarks.at(k).position.x;
                 tmpRndY = poseMarks.at(k).position.y;
                 tmpRndZ = poseMarks.at(k).position.z;
@@ -747,7 +760,7 @@ int main(int argc, char *argv[])
 
     // To turn on additional logging, include <rti/config/Logger.hpp> and
     // uncomment the following line:
-    // rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
+    //rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
 
     try {
         participant_main(domain_id);
