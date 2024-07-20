@@ -164,16 +164,37 @@ XML" chapter in the RTI Connext DDS Core Libraries User's Manual.
                 </subscription_name>
             </datareader_qos>
             <participant_qos>
-                <!--
-                The participant name, if it is set, will be displayed in the
-                RTI tools, making it easier for you to tell one
-                application from another when you're debugging.
-                -->
                 <participant_name>
                     <name>cros2_demo</name>
                     <role_name>cros2_demo_role</role_name>
                 </participant_name>
-                
+
+                <!-- discovery peers provides the list of places to contact for discovery; 
+                      add the address of any remote machine in your ROS2 network here 
+                      (if multicast is not supported on your network) -->
+                <discovery>
+                    <initial_peers>
+                        <element>239.255.0.1</element>
+                        <element>4@builtin.udpv4://127.0.0.1</element>
+                        <element>builtin.shmem://</element>
+                    </initial_peers>
+                </discovery>
+
+               <!-- Allow/Deny interface can help when running on machines that have many interfaces (NIC, VPN, Docker, etc.); limit which ones are used for DDS
+                <property>    
+                    <value>
+                        <element>
+                            <name>dds.transport.UDPv4.builtin.parent.deny_interfaces_list</name>
+                            <value>10.10.1.35</value>
+                        </element> 
+                        <element>
+                            <name>dds.transport.UDPv4.builtin.parent.allow_interfaces_list</name>
+                            <value>192.168.1.*</value>
+                        </element> 
+                    </value>
+                </property>
+                -->
+
                 <!-- suppress typeObject compression if interop with earlier DDS 
                 <discovery_config>
                     <endpoint_type_object_lb_serialization_threshold>
